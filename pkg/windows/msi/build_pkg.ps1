@@ -531,6 +531,7 @@ Write-Host "Compiling *.wxs to $($ARCHITECTURE[$i]) *.wixobj: " -NoNewline
 Push-Location $SCRIPT_DIR
 & "$($ENV:WIX)bin\candle.exe" -nologo -sw1150 `
     -arch $ARCHITECTURE[$i] `
+    -dARCHITECTURE="$($ARCHITECTURE[$i])" `
     -dWIN64="$($WIN64[$i])" `
     -dPROGRAMFILES="$($PROGRAMFILES[$i])" `
     -dMANUFACTURER="$MANUFACTURER" `
