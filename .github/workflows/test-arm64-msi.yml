@@ -52,6 +52,15 @@ jobs:
         with:
           cache-prefix: test-arm64-msi
 
+      - name: Stub Man Pages
+        # setup.py's install_data step copies these into the wheel; a
+        # real build gets them from build-docs (Sphinx), which this
+        # harness skips entirely. Same stub install_salt.ps1 itself
+        # already creates for non-source-tarball local dev builds.
+        run: |
+          mkdir -p doc/man
+          touch doc/man/salt-call.1 doc/man/salt-cp.1 doc/man/salt-minion.1
+
       - name: Create Source Tarball
         env:
           SALT_VERSION: "${{ needs.prepare.outputs.salt-version }}"
