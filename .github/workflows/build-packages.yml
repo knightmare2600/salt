@@ -482,7 +482,7 @@ jobs:
       matrix:
         include: ${{ fromJSON(inputs.matrix)['windows'] }}
     runs-on:
-      - windows-latest
+      - ${{ matrix.arch == 'arm64' && 'windows-11-arm' || 'windows-latest' }}
     env:
       SM_HOST: "${{ secrets.WIN_SIGN_HOST_PROD }}"
       SM_API_KEY: "${{ secrets.WIN_SIGN_API_KEY }}"

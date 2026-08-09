@@ -272,7 +272,11 @@ IMCAC - Immediate Custom Action - It's immediate
 
     <!-- Install VC++ runtime -->
     <DirectoryRef Id="TARGETDIR">
-    <!-- Visual C++ runtimes depend on the target platform -->
+    <!-- Visual C++ runtimes depend on the target platform. No arm64
+         merge module is published upstream yet, so the arm64 build
+         (WIN64=yes, same as amd64) intentionally bundles the x64 CRT,
+         which runs under Windows 11 on Arm's x64 emulation. Replace
+         with a native Microsoft_VC143_CRT_arm64.msm once one exists. -->
     <?if $(var.WIN64)=yes ?>
       <Merge Id="MSM_VC143_CRT" SourceFile="$(var.WEBCACHE_DIR)\Microsoft_VC143_CRT_x64.msm" DiskId="1" Language="0" />
     <?else ?>

@@ -526,7 +526,7 @@ def macos(
         },
         "arch": {
             "help": "The architecture to build the package for",
-            "choices": ("x86", "amd64"),
+            "choices": ("x86", "amd64", "arm64"),
             "required": True,
         },
         "sign": {
@@ -763,7 +763,9 @@ def onedir_dependencies(
     if platform == "darwin":
         platform = "macos"
 
-    if platform != "macos" and arch == "arm64":
+    if platform == "linux" and arch == "arm64":
+        # relenv's linux arches use "aarch64"; macos and windows both use
+        # "arm64" literally (confirmed against relenv's arches dict).
         arch = "aarch64"
 
     shared_constants = tools.utils.get_cicd_shared_context()

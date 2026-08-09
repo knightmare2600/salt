@@ -82,12 +82,18 @@ $SCRIPTS_DIR    = "$BUILDENV_DIR\Scripts"
 $SITE_PKGS_DIR  = "$BUILDENV_DIR\Lib\site-packages"
 $BUILD_SALT_DIR = "$SITE_PKGS_DIR\salt"
 $PYTHON_BIN     = "$SCRIPTS_DIR\python.exe"
-$BUILD_ARCH     = $(. $PYTHON_BIN -c "import platform; print(platform.architecture()[0])")
+# platform.architecture()[0] only reports pointer width (64bit/32bit),
+# which can't distinguish arm64 from amd64 - both are "64bit". Use
+# platform.machine() instead, which reports the actual ISA the running
+# interpreter was built for.
+$BUILD_ARCH     = $(. $PYTHON_BIN -c "import platform; print(platform.machine())")
 $SCRIPT_DIR     = (Get-ChildItem "$($myInvocation.MyCommand.Definition)").DirectoryName
 $RUNTIME_DIR    = [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()
 $CSC_BIN        = "$RUNTIME_DIR\csc.exe"
 
-if ( $BUILD_ARCH -eq "64bit" ) {
+if ( $BUILD_ARCH -eq "ARM64" ) {
+    $BUILD_ARCH    = "ARM64"
+} elseif ( $BUILD_ARCH -eq "AMD64" ) {
     $BUILD_ARCH    = "AMD64"
 } else {
     $BUILD_ARCH    = "x86"
@@ -195,15 +201,19 @@ $MANUFACTURER        = "Salt Project"
 $PRODUCT             = "Salt Minion"
 $PRODUCTFILE         = "Salt-Minion-$Version"
 $PRODUCTDIR          = "Salt"
-$DISCOVER_INSTALLDIR = "$BUILDENV_DIR", "$BUILDENV_DIR"
+$DISCOVER_INSTALLDIR = "$BUILDENV_DIR", "$BUILDENV_DIR",       "$BUILDENV_DIR"
 $DISCOVER_CONFDIR    = Get-Item "$BUILDENV_DIR\configs"
 
-# MSI related arrays for 64 and 32 bit values, selected by BUILD_ARCH
-if ($BUILD_ARCH -eq "AMD64") {$i = 0} else {$i = 1}
-$WIN64        = "yes",                  "no"                   # Used in wxs
-$ARCHITECTURE = "x64",                  "x86"                  # WiX dictionary values
-$ARCH_AKA     = "AMD64",                "x86"                  # For filename
-$PROGRAMFILES = "ProgramFiles64Folder", "ProgramFilesFolder"   # msi dictionary values
+# MSI related arrays for 64, 32, and arm64 bit values, selected by BUILD_ARCH.
+# arm64 reuses the amd64 WIN64/PROGRAMFILES values (it's still a native
+# 64-bit package installing under the 64-bit Program Files) but needs its
+# own WiX -arch tag and filename tag so the resulting MSI is correctly
+# identified as ARM64 rather than mislabeled as AMD64.
+if ($BUILD_ARCH -eq "ARM64") {$i = 2} elseif ($BUILD_ARCH -eq "AMD64") {$i = 0} else {$i = 1}
+$WIN64        = "yes",                  "no",                  "yes"                  # Used in wxs
+$ARCHITECTURE = "x64",                  "x86",                 "arm64"                # WiX dictionary values
+$ARCH_AKA     = "AMD64",                "x86",                 "ARM64"                # For filename
+$PROGRAMFILES = "ProgramFiles64Folder", "ProgramFilesFolder",  "ProgramFiles64Folder"  # msi dictionary values
 
 function CheckExitCode() {   # Exit on failure
     if ($LastExitCode -ne 0) {

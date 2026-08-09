@@ -30,10 +30,11 @@ param(
     [String] $Version,
 
     [Parameter(Mandatory=$false)]
-    [ValidateSet("x86", "x64", "amd64")]
+    [ValidateSet("x86", "x64", "amd64", "arm64")]
     [Alias("a")]
     # The System Architecture to build. "x86" will build a 32-bit installer.
-    # "x64" will build a 64-bit installer. Default is: x64
+    # "x64" will build a 64-bit installer. "arm64" will build a native
+    # ARM64 installer. Default is: x64
     $Architecture = "x64",
 
     [Parameter(Mandatory=$false)]

@@ -31,7 +31,22 @@ runs:
 
   steps:
 
+    # TEMPORARY: windows arm64 has no released relenv version to install
+    # or prebuilt Python to fetch - saltstack/relenv doesn't support the
+    # target yet (tracks https://github.com/saltstack/relenv/issues/280).
+    # Install from a WIP fork branch and compile CPython in this job
+    # instead of fetching a release. Remove this branch (and go back to
+    # the single Install Relenv / Fetch Native Python Build steps below
+    # for every arch) once relenv ships an official windows arm64 release
+    # and the `version` input above is bumped to include it.
+    - name: Install Relenv (windows arm64 fork, pending upstream release)
+      if: ${{ inputs.platform == 'windows' && inputs.arch == 'arm64' }}
+      shell: bash
+      run: |
+        python -m pip install "relenv @ git+https://github.com/knightmare2600/relenv.git@windows-arm64-support"
+
     - name: Install Relenv
+      if: ${{ !(inputs.platform == 'windows' && inputs.arch == 'arm64') }}
       shell: bash
       run: |
         python -m pip install relenv==${{ inputs.version }}
@@ -50,7 +65,14 @@ runs:
       run: |
         python -m pip install relenv[toolchain]
 
+    - name: Build Native Python (windows arm64 fork, pending upstream release)
+      if: ${{ inputs.platform == 'windows' && inputs.arch == 'arm64' }}
+      shell: pwsh
+      run: |
+        python -m relenv build --no-pretty --arch=arm64 --python=${{ inputs.python-version }}
+
     - name: Fetch Native Python Build
+      if: ${{ !(inputs.platform == 'windows' && inputs.arch == 'arm64') }}
       shell: bash
       env:
         RELENV_FETCH_VERSION: "${{ inputs.version }}"
