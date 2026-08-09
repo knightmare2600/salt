@@ -22,11 +22,17 @@ IMCAC - Immediate Custom Action - It's immediate
     Language     = "1033">
 
     <!--  Install per Machine -->
+    <!-- Platform defaults to x86 when omitted, regardless of the -arch
+         switch passed to candle.exe - without it explicitly here,
+         light.exe rejects the 64-bit VC++ CRT merge module with
+         "is a 64-bit merge module but the product consuming it is
+         32-bit." sys.BUILDARCH tracks candle's actual -arch value. -->
     <Package
       InstallScope      = "perMachine"
       InstallerVersion  = "500"
       Compressed        = "yes"
       InstallPrivileges = "elevated"
+      Platform          = "$(sys.BUILDARCH)"
     />
 
     <!-- Prevent downgrade -->
