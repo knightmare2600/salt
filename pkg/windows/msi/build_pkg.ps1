@@ -175,6 +175,17 @@ $RUNTIMES | ForEach-Object {
     VerifyOrDownload "$WEBCACHE_DIR\$name" "$DEPS_URL/$name" "$hash"
 }
 
+if ( $BUILD_ARCH -eq "ARM64" ) {
+    # Merge modules enforce exact architecture matching at build time
+    # (a Windows Installer rule, not a WiX limitation) - an x64 merge
+    # module cannot be merged into an arm64-declared product even
+    # though the resulting DLLs run fine under Windows 11 on Arm's x64
+    # emulation. No native arm64 merge module is published anywhere
+    # yet, so arm64 launches the standalone installer EXE via a
+    # CustomAction (see Product.wxs) instead of merging an .msm.
+    VerifyOrDownload "$WEBCACHE_DIR\vcredist_x64_2022.exe" "$DEPS_URL/vcredist_x64_2022.exe" "1AD7988C17663CC742B01BEF1A6DF2ED1741173009579AD50A94434E54F56073"
+}
+
 #-------------------------------------------------------------------------------
 # Converting to MSI Version
 #-------------------------------------------------------------------------------
