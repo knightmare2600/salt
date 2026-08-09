@@ -847,6 +847,14 @@ def onedir_dependencies(
     # Cryptography needs openssl dir set to link to the proper openssl libs.
     if platform == "macos":
         env["OPENSSL_DIR"] = f"{dest}"
+    elif platform == "windows" and arch == "arm64":
+        # No prebuilt wheel exists for cryptography on this target yet,
+        # so pip falls back to compiling it, and openssl-sys has no
+        # other way to find an OpenSSL to link against. relenv bundles a
+        # copy of the OpenSSL dev tree it built from source for arm64
+        # into the onedir at OpenSSL/ for exactly this. amd64/x86 always
+        # have a prebuilt wheel and never reach this build path.
+        env["OPENSSL_DIR"] = str(dest / "OpenSSL")
 
     if platform == "linux":
         # This installs the ppbt package. We'll remove it after installing all
